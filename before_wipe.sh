@@ -13,14 +13,15 @@ fi
 echo "# username:uid:gid:home:shell:groups" > "$OUTPUT"
 
 # Lista usuários reais (UID >= 1000)
-getent passwd | awk -F: '$3 >= 1000 {print $1}' | while read -r user; do
-  UID=$(id -u "$user")
-  GID=$(id -g "$user")
-  HOME=$(getent passwd "$user" | cut -d: -f6)
-  SHELL=$(getent passwd "$user" | cut -d: -f7)
-  GROUPS=$(id -nG "$user" | tr ' ' ',')
+while IFS=: read -r user _ user_uid user_gid _ home shell; do
+  # Apenas usuários humanos
+  [[ "$user_uid" -lt 1000 ]] && continue
+  [[ "$shell" == */nologin ]] && continue
 
-  echo "$user:$UID:$GID:$HOME:$SHELL:$GROUPS" >> "$OUTPUT"
-done
+  # Grupos (não pode falhar o script inteiro)
+  groups=$(id -nG "$user" 2>/dev/null | tr ' ' ',' || true)
+
+  echo "$user:$user_uid:$user_gid:$home:$shell:$groups" >> "$OUTPUT"
+done < <(getent passwd)
 
 echo "Snapshot criado em: $OUTPUT"
