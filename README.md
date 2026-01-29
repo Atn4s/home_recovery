@@ -1,3 +1,3 @@
 # scripts para recuperação
 
-repositorio para recuperacao de informacoes apos formatacao
+repositorio para recuperacao de informacoes apos formatação de maquinas Linux
